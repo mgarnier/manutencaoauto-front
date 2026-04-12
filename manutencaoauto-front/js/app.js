@@ -6,6 +6,7 @@
   const routes = {
     "/manutencoes": views.manutencoes,
     "/servicos": views.servicos,
+    "/servicos-selecionados": views.servicos_selecionados,
     "/associacoes": views.associacoes,
   };
 
