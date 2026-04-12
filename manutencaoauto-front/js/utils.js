@@ -22,6 +22,26 @@
     });
   }
 
+  function formatDate(value) {
+    if (!value) {
+      return "-";
+    }
+
+    const text = String(value).trim();
+    const isoDateMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoDateMatch) {
+      const [, year, month, day] = isoDateMatch;
+      return `${day}/${month}/${year}`;
+    }
+
+    const date = new Date(text);
+    if (Number.isNaN(date.getTime())) {
+      return "-";
+    }
+
+    return date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
+  }
+
   function showFeedback(type, message) {
     const feedback = document.getElementById("global-feedback");
     feedback.className = "feedback";
@@ -51,6 +71,7 @@
   window.ManutencaoFront.utils = {
     escapeHtml,
     formatCurrency,
+    formatDate,
     showFeedback,
     hideFeedback,
     buildQuery,

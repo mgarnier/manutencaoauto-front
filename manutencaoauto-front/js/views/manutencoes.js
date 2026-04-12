@@ -11,8 +11,8 @@
             <td>${utils.escapeHtml(item.id)}</td>
             <td>${utils.escapeHtml(item.descricao)}</td>
             <td>${utils.escapeHtml(item.quilometragem)}</td>
-            <td>${utils.escapeHtml(item.data_prevista || "-")}</td>
-            <td>${utils.escapeHtml(item.data_realizada || "-")}</td>
+            <td>${utils.formatDate(item.data_prevista)}</td>
+            <td>${utils.formatDate(item.data_realizada)}</td>
             <td class="actions">
               <button type="button" class="danger" data-action="delete-manutencao" data-id="${utils.escapeHtml(item.id)}">Excluir</button>
             </td>
