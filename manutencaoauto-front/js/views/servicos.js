@@ -57,7 +57,7 @@
               <input id="s-freq" name="frequencia_km" type="number" min="1" required>
             </div>
             <div class="field">
-              <label for="s-preco">Preço</label>
+              <label for="s-preco">Preço (R$)</label>
               <input id="s-preco" name="preco" type="number" step="0.01" min="0" required>
             </div>
             <div class="form-actions">
