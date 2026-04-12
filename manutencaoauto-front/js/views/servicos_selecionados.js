@@ -194,8 +194,8 @@
               <th>ID</th>
               <th>Serviço</th>
               <th>Frequência (km)</th>
-              <th>Preço base</th>
-              <th>Preço da associação</th>
+              <th>Preço de tabela</th>
+              <th>Preço praticado</th>
             </tr>
           </thead>
           <tbody>${servicoRows}</tbody>
@@ -207,7 +207,7 @@
     return `
       <div class="view-head">
         <h2>Serviços selecionados</h2>
-        <p>Selecione uma manutenção e vincule/desvincule serviços com preço específico por associação.</p>
+        <p>Selecione uma manutenção e vincule/desvincule serviços.</p>
       </div>
       <div class="form-actions selected-services-actions">
         <button type="button" class="secondary" data-action="refresh-screen">Atualizar dados</button>
