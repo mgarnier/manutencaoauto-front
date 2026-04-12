@@ -55,6 +55,11 @@
         return;
       }
 
+      if (!/^https?:\/\//i.test(nextValue)) {
+        utils.showFeedback("error", "A URL base da API deve começar com http:// ou https://.");
+        return;
+      }
+
       config.baseUrl = nextValue;
       localStorage.setItem("manutencaoauto_api_base_url", nextValue);
       utils.showFeedback("success", "URL da API atualizada.");

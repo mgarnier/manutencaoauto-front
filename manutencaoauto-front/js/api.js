@@ -7,6 +7,7 @@
     const url = `${config.baseUrl}${path}`;
     try {
       const response = await fetch(url, {
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -25,6 +26,7 @@
 
       return { ok: true, status: response.status, data };
     } catch (error) {
+      console.error("Falha de rede/CORS ao acessar a API", { url, error });
       return {
         ok: false,
         status: 0,
