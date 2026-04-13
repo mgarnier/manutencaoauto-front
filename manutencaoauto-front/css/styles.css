@@ -279,16 +279,40 @@ button.danger {
   gap: 0.8rem;
 }
 
-.maintenance-select-btn {
-  min-width: 110px;
+.maintenance-row-selectable {
+  cursor: pointer;
+}
+
+.maintenance-row-selectable:hover td {
+  background: #fbefe4;
+}
+
+.maintenance-row-selectable:focus-visible td {
+  outline: 2px solid #cb8c52;
+  outline-offset: -2px;
+}
+
+.service-row-selectable {
+  cursor: pointer;
+}
+
+.service-row-selectable:hover td {
+  background: #fbefe4;
+}
+
+.service-row-selectable:focus-visible td {
+  outline: 2px solid #52a86c;
+  outline-offset: -2px;
 }
 
 .selected-maintenance-row td {
   background: #f6e6d8;
+  font-weight: bold;
 }
 
 .linked-service-row td {
-  background: #e9f6ee;
+  background: #f6e6d8;
+  font-weight: bold;
 }
 
 .pending-service-row td {
@@ -309,8 +333,11 @@ button.danger {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 640px;
   background: #fff;
+}
+
+.services-table {
+  min-width: 640px;
 }
 
 th,

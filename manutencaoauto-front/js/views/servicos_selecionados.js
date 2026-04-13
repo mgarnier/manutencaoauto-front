@@ -98,21 +98,23 @@
       .map((item) => {
         const id = Number(item.id);
         const isSelected = selectedId === id;
-        const rowClass = isSelected ? "selected-maintenance-row" : "";
+        const rowClass = ["maintenance-row-selectable", isSelected ? "selected-maintenance-row" : ""]
+          .filter(Boolean)
+          .join(" ");
 
         return `
-          <tr class="${rowClass}">
-            <td>${utils.escapeHtml(item.id)}</td>
+          <tr
+            class="${rowClass}"
+            data-action="select-manutencao-row"
+            data-id="${utils.escapeHtml(item.id)}"
+            tabindex="0"
+            role="button"
+            aria-selected="${isSelected ? "true" : "false"}"
+            aria-label="Selecionar manutenção ${utils.escapeHtml(item.descricao)}"
+          >
             <td>${utils.escapeHtml(item.descricao)}</td>
-            <td>${utils.escapeHtml(item.quilometragem)}</td>
-            <td class="actions">
-              <button
-                type="button"
-                class="secondary maintenance-select-btn"
-                data-action="select-manutencao"
-                data-id="${utils.escapeHtml(item.id)}"
-              >${isSelected ? "Selecionada" : "Selecionar"}</button>
-            </td>
+            <td>${utils.formatDate(item.data_prevista)}</td>
+            <td>${utils.formatDate(item.data_realizada)}</td>
           </tr>
         `;
       })
@@ -125,26 +127,23 @@
         const isLinked = Boolean(associacao);
         const idManutencao = selectedId || 0;
         const isRowPending = selectedId ? isPending(idManutencao, idServico) : false;
-        const rowClasses = [isLinked ? "linked-service-row" : "", isRowPending ? "pending-service-row" : ""]
+        const canEditPrice = Boolean(selectedId && isLinked && !isRowPending);
+        const canToggle = Boolean(selectedId && !isRowPending);
+        const rowClasses = [
+          canToggle ? "service-row-selectable" : "",
+          isLinked ? "linked-service-row" : "",
+          isRowPending ? "pending-service-row" : "",
+        ]
           .filter(Boolean)
           .join(" ");
 
         const inputPrice = isLinked ? toInputPrice(associacao.preco) : toInputPrice(item.preco);
-        const canEditPrice = Boolean(selectedId && isLinked && !isRowPending);
-        const canToggle = Boolean(selectedId && !isRowPending);
+        const interactiveAttrs = canToggle
+          ? `data-action="toggle-servico-row" data-id-servico="${utils.escapeHtml(idServico)}" tabindex="0" role="checkbox" aria-checked="${isLinked ? "true" : "false"}" aria-label="${isLinked ? "Desvincular" : "Vincular"} serviço ${utils.escapeHtml(item.nome)}"`
+          : "";
 
         return `
-          <tr class="${rowClasses}">
-            <td>
-              <input
-                type="checkbox"
-                data-action="toggle-servico"
-                data-id-servico="${utils.escapeHtml(idServico)}"
-                ${isLinked ? "checked" : ""}
-                ${canToggle ? "" : "disabled"}
-              >
-            </td>
-            <td>${utils.escapeHtml(item.id)}</td>
+          <tr class="${rowClasses}" ${interactiveAttrs}>
             <td>${utils.escapeHtml(item.nome)}</td>
             <td>${utils.escapeHtml(item.frequencia_km)}</td>
             <td>${utils.formatCurrency(item.preco)}</td>
@@ -169,13 +168,12 @@
     const manutencaoTable = manutencaoRows
       ? `
       <div class="table-wrap">
-        <table>
+        <table class="maintenance-table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Descrição</th>
-              <th>Quilometragem</th>
-              <th>Ações</th>
+              <th>Data prevista</th>
+              <th>Data realizada</th>
             </tr>
           </thead>
           <tbody>${manutencaoRows}</tbody>
@@ -187,11 +185,9 @@
     const servicoTable = servicoRows
       ? `
       <div class="table-wrap">
-        <table>
+        <table class="services-table">
           <thead>
             <tr>
-              <th>Selecionado</th>
-              <th>ID</th>
               <th>Serviço</th>
               <th>Frequência (km)</th>
               <th>Preço de tabela</th>
@@ -227,9 +223,9 @@
   }
 
   function bindEvents(container) {
-    container.querySelectorAll('[data-action="select-manutencao"]').forEach((button) => {
-      button.addEventListener("click", () => {
-        const id = Number(button.getAttribute("data-id") || 0);
+    container.querySelectorAll('[data-action="select-manutencao-row"]').forEach((row) => {
+      const selectManutencao = () => {
+        const id = Number(row.getAttribute("data-id") || 0);
         if (!id || id === state.selectedManutencaoId) {
           return;
         }
@@ -237,6 +233,19 @@
         state.selectedManutencaoId = id;
         container.innerHTML = template();
         bindEvents(container);
+      };
+
+      row.addEventListener("click", () => {
+        selectManutencao();
+      });
+
+      row.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") {
+          return;
+        }
+
+        event.preventDefault();
+        selectManutencao();
       });
     });
 
@@ -247,21 +256,36 @@
       });
     }
 
-    container.querySelectorAll('[data-action="toggle-servico"]').forEach((checkbox) => {
-      checkbox.addEventListener("change", async () => {
+    container.querySelectorAll('[data-action="toggle-servico-row"]').forEach((row) => {
+      const toggleServico = async () => {
         const idManutencao = state.selectedManutencaoId;
-        const idServico = Number(checkbox.getAttribute("data-id-servico") || 0);
+        const idServico = Number(row.getAttribute("data-id-servico") || 0);
         if (!idManutencao || !idServico) {
-          checkbox.checked = false;
           return;
         }
 
-        if (checkbox.checked) {
-          await vincularServico(container, idManutencao, idServico);
+        const isLinked = Boolean(getAssociacao(idManutencao, idServico));
+        if (isLinked) {
+          await desvincularServico(container, idManutencao, idServico);
           return;
         }
 
-        await desvincularServico(container, idManutencao, idServico);
+        await vincularServico(container, idManutencao, idServico);
+      };
+
+      row.addEventListener("click", (event) => {
+        if (event.target.closest('[data-action="edit-preco"]')) {
+          return;
+        }
+        toggleServico();
+      });
+
+      row.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") {
+          return;
+        }
+        event.preventDefault();
+        toggleServico();
       });
     });
 
